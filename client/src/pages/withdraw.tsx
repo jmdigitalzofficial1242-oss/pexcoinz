@@ -149,8 +149,8 @@ export default function Withdraw() {
   const createTx = useCreateTransaction();
 
   const currentBalance = balance ? (balance as any)[currency.toLowerCase()] ?? 0 : 0;
-  const feeAmount = Number(amount) * 0.05;
-  const receiveAmount = Number(amount) * 0.95;
+  const feeAmount = Number(amount) * 0.10;
+  const receiveAmount = Number(amount) * 0.90;
 
   const NETWORK_OPTIONS: Record<string, string[]> = {
     USDT: ["TRC20 (TRON)", "ERC20 (Ethereum)", "BEP20 (BSC)"],
@@ -318,7 +318,7 @@ export default function Withdraw() {
                     {amount && Number(amount) > 0 && (
                       <div className="bg-muted/30 rounded-lg p-2 space-y-1 text-xs">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Platform Fee (5%)</span>
+                          <span className="text-muted-foreground">Platform Fee (10%)</span>
                           <span className="font-mono text-negative">−{feeAmount.toFixed(8)}</span>
                         </div>
                         <div className="flex justify-between font-medium">

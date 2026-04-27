@@ -5,6 +5,8 @@ export interface IDeposit extends Document {
   amount: mongoose.Types.Decimal128;
   currency: string;
   methodId: mongoose.Types.ObjectId; // Reference to PaymentMethod
+  feeAmount: mongoose.Types.Decimal128;
+  netAmount: mongoose.Types.Decimal128;
   referenceId: string; // generated internally for identifying
   txHash?: string; // from external network
   proof?: string; // image url
@@ -21,6 +23,8 @@ const depositSchema = new Schema<IDeposit>(
     amount: { type: Schema.Types.Decimal128, required: true },
     currency: { type: String, required: true },
     methodId: { type: Schema.Types.ObjectId, ref: "PaymentMethod", required: true },
+    feeAmount: { type: Schema.Types.Decimal128, required: true, default: 0 },
+    netAmount: { type: Schema.Types.Decimal128, required: true, default: 0 },
     referenceId: { type: String, required: true, unique: true },
     txHash: { type: String },
     proof: { type: String },

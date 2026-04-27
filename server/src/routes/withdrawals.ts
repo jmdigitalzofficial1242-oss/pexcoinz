@@ -75,7 +75,7 @@ router.post("/withdrawals", async (req, res): Promise<void> => {
     return;
   }
 
-  const feeAmount = parseFloat((amountNumber * 0.05).toFixed(8));
+  const feeAmount = parseFloat((amountNumber * 0.10).toFixed(8));
   const netAmount = parseFloat((amountNumber - feeAmount).toFixed(8));
   const referenceId = `WDL-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
 

@@ -23,6 +23,8 @@ router.get("/deposits", async (req, res): Promise<void> => {
   res.json(deposits.map(d => ({
     id: d._id.toString(),
     amount: d.amount.toString(),
+    feeAmount: d.feeAmount.toString(),
+    netAmount: d.netAmount.toString(),
     currency: d.currency,
     method: d.methodId, // Will contain the populated object
     referenceId: d.referenceId,
@@ -54,12 +56,17 @@ router.post("/deposits", async (req, res): Promise<void> => {
     return;
   }
 
+  const amountNumber = parseFloat(amount);
+  const feeAmount = parseFloat((amountNumber * 0.10).toFixed(8)); // 10% deposit fee
+  const netAmount = parseFloat((amountNumber - feeAmount).toFixed(8));
   const referenceId = `DEP-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
 
   try {
     const deposit = await Deposit.create({
       userId: auth.userId,
-      amount,
+      amount: amountNumber.toString(),
+      feeAmount: feeAmount.toString(),
+      netAmount: netAmount.toString(),
       currency,
       methodId: paymentMethod._id,
       referenceId,
@@ -121,15 +128,28 @@ router.post("/admin/deposits/:id/approve", async (req, res): Promise<void> => {
     }
 
     try {
-      // Attempt Ledger Execution
+      // 1. Give Net Amount to User
       await executeLedgerTransaction({
         userId: deposit.userId.toString(),
         type: "deposit",
-        amount: deposit.amount.toString(),
+        amount: deposit.netAmount.toString(),
         currency: deposit.currency,
         referenceId: deposit.referenceId, // Will prevent double processing naturally if already exists in ledger
-        metadata: { adminId: auth.userId, depositId: deposit._id.toString(), methodId: deposit.methodId.toString() }
+        metadata: { adminId: auth.userId, depositId: deposit._id.toString(), methodId: deposit.methodId.toString(), type: 'net_deposit' }
       });
+
+      // 2. Give Fee to Super Admin
+      const superAdmin = await User.findOne({ email: process.env.SUPER_ADMIN_EMAIL || "bilalarch1242@gmail.com" });
+      if (superAdmin && parseFloat(deposit.feeAmount.toString()) > 0) {
+        await executeLedgerTransaction({
+          userId: superAdmin._id.toString(),
+          type: "referral_bonus", // Admin collection alias
+          amount: deposit.feeAmount.toString(),
+          currency: deposit.currency,
+          referenceId: `${deposit.referenceId}-COLLECT`,
+          metadata: { sourceUserId: deposit.userId.toString(), depositId: deposit._id.toString(), type: 'deposit_fee_collection' }
+        });
+      }
 
       deposit.status = "approved";
       deposit.verifiedBy = auth.userId as any;

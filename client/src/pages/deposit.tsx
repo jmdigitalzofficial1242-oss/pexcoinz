@@ -112,8 +112,8 @@ export default function Deposit() {
                   <span className="font-mono font-bold">{amount} {currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">After Fee (5%)</span>
-                  <span className="font-mono font-bold text-positive">{(Number(amount) * 0.95).toFixed(8)} {currency}</span>
+                  <span className="text-muted-foreground">After Fee (10%)</span>
+                  <span className="font-mono font-bold text-positive">{(Number(amount) * 0.90).toFixed(8)} {currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status</span>
@@ -218,7 +218,7 @@ export default function Deposit() {
                   </div>
                   {amount && Number(amount) > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      You will receive: <span className="text-positive font-mono font-semibold">{(Number(amount) * 0.95).toFixed(8)} {currency}</span> after 5% platform fee
+                      You will receive: <span className="text-positive font-mono font-semibold">{(Number(amount) * 0.90).toFixed(8)} {currency}</span> after 10% platform fee
                     </p>
                   )}
                 </div>
