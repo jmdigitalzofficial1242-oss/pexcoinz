@@ -3,24 +3,42 @@ dotenv.config();
 
 import app from "./app";
 import { connectDB } from "./lib/db";
+import mongoose from "mongoose";
 
 const PORT = parseInt(process.env.PORT || "5000", 10);
 
-async function init() {
-  // Connect to MongoDB
+// For Vercel: Connect DB on each request (Mongoose handles reuse)
+const startServer = async () => {
   await connectDB();
   
-  console.log("✅ Database connected");
+  if (process.env.VERCEL) {
+    console.log("✅ Running on Vercel");
+    return;
+  }
 
-  // Start server
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`\n🚀 PexCoin Server running on port ${PORT}`);
     console.log(`📍 API: http://localhost:${PORT}/api/healthz`);
-    console.log(`🌐 App: http://localhost:${PORT}\n`);
   });
+
+  const shutdown = () => {
+    server.close(() => {
+      mongoose.connection.close(false).then(() => process.exit(0));
+    });
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+};
+
+// Export for Vercel
+export default async (req: any, res: any) => {
+  await connectDB();
+  return app(req, res);
+};
+
+// Start normally if not on Vercel
+if (!process.env.VERCEL) {
+  startServer().catch(console.error);
 }
 
-init().catch((err) => {
-  console.error("❌ Failed to start server:", err);
-  process.exit(1);
-});

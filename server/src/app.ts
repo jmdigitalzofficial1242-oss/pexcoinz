@@ -37,6 +37,16 @@ app.use("/api", router);
 const clientDist = path.resolve(__dirname, "../../client/dist");
 app.use(express.static(clientDist));
 
+// Error handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error(`[Error] ${req.method} ${req.url}:`, err.stack);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === "production" 
+      ? "Internal Server Error" 
+      : err.message
+  });
+});
+
 // SPA fallback - serve index.html for all non-API routes
 app.get("*", (req, res) => {
   if (req.path.startsWith("/api")) {
@@ -45,5 +55,6 @@ app.get("*", (req, res) => {
   }
   res.sendFile(path.join(clientDist, "index.html"));
 });
+
 
 export default app;
