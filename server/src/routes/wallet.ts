@@ -3,7 +3,7 @@ import Wallet from "../models/Wallet";
 import WalletLedger from "../models/WalletLedger";
 import { getAuthUser } from "./auth";
 
-const router: Router = Router();
+const router: any = Router();
 
 // Get Wallet Balances
 router.get("/wallet", async (req, res): Promise<void> => {

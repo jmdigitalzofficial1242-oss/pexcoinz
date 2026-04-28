@@ -279,7 +279,7 @@ router.post("/admin/transactions/:id/approve", async (req, res): Promise<void> =
   if (deposit) {
     try {
       await executeLedgerTransaction({
-        userId: deposit.userId._id.toString(),
+        userId: (deposit.userId as any)._id.toString(),
         type: "deposit",
         amount: deposit.amount.toString(),
         currency: deposit.currency,
@@ -333,10 +333,10 @@ router.post("/admin/transactions/:id/approve", async (req, res): Promise<void> =
 
   if (withdrawal) {
     try {
-      await unlockBalance(withdrawal.userId._id.toString(), withdrawal.currency, withdrawal.amount.toString());
+      await unlockBalance((withdrawal.userId as any)._id.toString(), withdrawal.currency, withdrawal.amount.toString());
 
       await executeLedgerTransaction({
-        userId: withdrawal.userId._id.toString(),
+        userId: (withdrawal.userId as any)._id.toString(),
         type: "withdraw",
         amount: `-${withdrawal.netAmount.toString()}`,
         currency: withdrawal.currency,
@@ -345,7 +345,7 @@ router.post("/admin/transactions/:id/approve", async (req, res): Promise<void> =
       });
 
       await executeLedgerTransaction({
-        userId: withdrawal.userId._id.toString(),
+        userId: (withdrawal.userId as any)._id.toString(),
         type: "fee",
         amount: `-${withdrawal.feeAmount.toString()}`,
         currency: withdrawal.currency,
@@ -361,7 +361,7 @@ router.post("/admin/transactions/:id/approve", async (req, res): Promise<void> =
           amount: withdrawal.feeAmount.toString(),
           currency: withdrawal.currency,
           referenceId: `${withdrawal.referenceId}-COLLECT`,
-          metadata: { sourceUserId: withdrawal.userId._id.toString(), type: 'fee_collection' }
+          metadata: { sourceUserId: (withdrawal.userId as any)._id.toString(), type: 'fee_collection' }
         });
       }
 
@@ -417,7 +417,7 @@ router.post("/admin/transactions/:id/reject", async (req, res): Promise<void> =>
 
   if (withdrawal) {
     try {
-      await unlockBalance(withdrawal.userId._id.toString(), withdrawal.currency, withdrawal.amount.toString());
+      await unlockBalance((withdrawal.userId as any)._id.toString(), withdrawal.currency, withdrawal.amount.toString());
       withdrawal.status = "rejected";
       withdrawal.processedBy = auth.userId as any;
       withdrawal.adminNote = typeof req.body.adminNote === "string" ? req.body.adminNote : "Rejected by admin";
