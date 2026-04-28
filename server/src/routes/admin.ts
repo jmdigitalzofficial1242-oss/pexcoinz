@@ -201,9 +201,9 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
   let wallet = await Wallet.findOne({ userId: user._id });
   if (!wallet) wallet = await Wallet.create({ userId: user._id, balances: {} });
 
-  if (body.usdtBalance != null) wallet.balances.set("USDT", new mongoose.Types.Decimal128(body.usdtBalance.toString()));
-  if (body.btcBalance != null) wallet.balances.set("BTC", new mongoose.Types.Decimal128(body.btcBalance.toString()));
-  if (body.ethBalance != null) wallet.balances.set("ETH", new mongoose.Types.Decimal128(body.ethBalance.toString()));
+  if (body.usdtBalance != null) wallet.balances.set("USDT", (mongoose.Types.Decimal128 as any).fromString(body.usdtBalance.toString()));
+  if (body.btcBalance != null) wallet.balances.set("BTC", (mongoose.Types.Decimal128 as any).fromString(body.btcBalance.toString()));
+  if (body.ethBalance != null) wallet.balances.set("ETH", (mongoose.Types.Decimal128 as any).fromString(body.ethBalance.toString()));
   await wallet.save();
 
   // Optionally log admin adjustment to ledger

@@ -62,9 +62,9 @@ router.get("/users/balance", async (req, res): Promise<void> => {
   }
 
   res.json({
-    usdt: parseFloat((wallet.balances.get("USDT") || new mongoose.Types.Decimal128("0")).toString()),
-    btc: parseFloat((wallet.balances.get("BTC") || new mongoose.Types.Decimal128("0")).toString()),
-    eth: parseFloat((wallet.balances.get("ETH") || new mongoose.Types.Decimal128("0")).toString()),
+    usdt: parseFloat((wallet.balances.get("USDT") || (mongoose.Types.Decimal128 as any).fromString("0")).toString()),
+    btc: parseFloat((wallet.balances.get("BTC") || (mongoose.Types.Decimal128 as any).fromString("0")).toString()),
+    eth: parseFloat((wallet.balances.get("ETH") || (mongoose.Types.Decimal128 as any).fromString("0")).toString()),
   });
 });
 
