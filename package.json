@@ -2,14 +2,9 @@
   "name": "pexcoin-deployment",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "client",
-    "server",
-    "api"
-  ],
   "scripts": {
-    "build": "pnpm --filter client build && pnpm --filter server build",
-    "postinstall": "pnpm --filter client install && pnpm --filter server install",
+    "build": "cd client && pnpm install && pnpm build && cd ../server && pnpm install && pnpm build",
+    "postinstall": "cd client && pnpm install && cd ../server && pnpm install",
     "start": "cd server && pnpm start"
   }
 }
