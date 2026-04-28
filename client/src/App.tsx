@@ -33,7 +33,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <BrowserRouter basename={base}>
+        <BrowserRouter>
           <BottomNav />
           <Routes>
             <Route path="/" element={<Home />} />
