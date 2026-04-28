@@ -2,26 +2,44 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 
-let isConnected = false;
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development and function invocations in serverless environments.
+ */
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
 
 export const connectDB = async () => {
-  if (isConnected) {
-    return;
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI is missing in environment variables.");
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+      console.log("✅ New MongoDB Connection Established");
+      return mongoose;
+    });
   }
 
   try {
-    const uri = process.env.MONGODB_URI;
-    
-    if (!uri) {
-      throw new Error("MONGODB_URI environment variable is missing.");
-    }
-    
-    const conn = await mongoose.connect(uri);
-    isConnected = !!conn.connections[0].readyState;
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    // In serverless, we throw the error so the function fails correctly
-    throw error;
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error("❌ MongoDB Connection Error:", e);
+    throw e;
   }
+
+  return cached.conn;
 };
