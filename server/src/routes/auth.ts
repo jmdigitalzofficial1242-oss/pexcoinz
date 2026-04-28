@@ -7,7 +7,7 @@ import { RegisterBody, LoginBody, LoginResponse, GetMeResponse } from "../lib/sc
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "pexcoin_default_secret_please_set_JWT_SECRET";
+const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET missing!") })() : "local_dev_only_secret");
 
 function generateToken(userId: string, role: string): string {
   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "7d" });

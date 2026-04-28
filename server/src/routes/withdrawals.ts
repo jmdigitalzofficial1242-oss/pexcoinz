@@ -3,7 +3,7 @@ import crypto from "crypto";
 import Withdrawal from "../models/Withdrawal";
 import User from "../models/User";
 import AdminLog from "../models/AdminLog";
-import { executeLedgerTransaction, checkAvailableBalance, lockBalance, unlockBalance } from "../lib/walletService";
+import { executeLedgerTransaction, checkAvailableBalance, lockBalance, unlockBalance, checkAndLockBalance, completeWithdrawalBatch } from "../lib/walletService";
 import { getAuthUser } from "./auth";
 
 const router = Router();
@@ -69,19 +69,13 @@ router.post("/withdrawals", async (req, res): Promise<void> => {
     return;
   }
 
-  const hasBalance = await checkAvailableBalance(auth.userId, currency, amountNumber);
-  if (!hasBalance) {
-    res.status(400).json({ error: "Insufficient available balance" });
-    return;
-  }
-
   const feeAmount = parseFloat((amountNumber * 0.10).toFixed(8));
   const netAmount = parseFloat((amountNumber - feeAmount).toFixed(8));
   const referenceId = `WDL-${crypto.randomBytes(6).toString("hex").toUpperCase()}`;
 
   try {
-    // Lock the requested balance purely based on the amount the user is trying to withdraw
-    await lockBalance(auth.userId, currency, amountNumber.toString());
+    // Lock the requested balance atomically (checks availability and locks in one transaction)
+    await checkAndLockBalance(auth.userId, currency, amountNumber.toString());
 
     const withdrawal = await Withdrawal.create({
       userId: auth.userId,
@@ -145,41 +139,19 @@ router.post("/admin/withdrawals/:id/complete", async (req, res): Promise<void> =
     }
 
     try {
-      // 1. Release the lock since we are executing it
-      await unlockBalance(withdrawal.userId.toString(), withdrawal.currency, withdrawal.amount.toString());
-
-      // 2. Perform Atomic deduction (Net Amount being sent out)
-      await executeLedgerTransaction({
-        userId: withdrawal.userId.toString(),
-        type: "withdraw",
-        amount: `-${withdrawal.netAmount.toString()}`,
-        currency: withdrawal.currency,
-        referenceId: `${withdrawal.referenceId}-NET`,
-        metadata: { withdrawalId: withdrawal._id.toString(), type: 'net_withdraw' }
-      });
-
-      // 3. Perform atomic deduction for Fee Commission (5%)
-      await executeLedgerTransaction({
-        userId: withdrawal.userId.toString(),
-        type: "fee",
-        amount: `-${withdrawal.feeAmount.toString()}`,
-        currency: withdrawal.currency,
-        referenceId: `${withdrawal.referenceId}-FEE`,
-        metadata: { withdrawalId: withdrawal._id.toString(), type: 'withdraw_fee' }
-      });
-
-      // 4. Update the Super Admin's wallet to collect the fee
       const superAdmin = await User.findOne({ email: process.env.SUPER_ADMIN_EMAIL || "bilalarch1242@gmail.com" });
-      if (superAdmin) {
-        await executeLedgerTransaction({
-          userId: superAdmin._id.toString(),
-          type: "referral_bonus", // Internal tracking alias for Treasury fee collection
-          amount: withdrawal.feeAmount.toString(),
-          currency: withdrawal.currency,
-          referenceId: `${withdrawal.referenceId}-COLLECT`,
-          metadata: { sourceUserId: withdrawal.userId.toString(), type: 'fee_collection' }
-        });
-      }
+      
+      // Atomic Batch Execution: Unlock + Deduct Net + Deduct Fee + Collect Fee
+      await completeWithdrawalBatch({
+        userId: withdrawal.userId.toString(),
+        currency: withdrawal.currency,
+        totalAmount: withdrawal.amount.toString(),
+        netAmount: withdrawal.netAmount.toString(),
+        feeAmount: withdrawal.feeAmount.toString(),
+        referenceId: withdrawal.referenceId,
+        withdrawalId: withdrawal._id.toString(),
+        superAdminId: superAdmin?._id.toString()
+      });
 
       withdrawal.status = "completed";
       withdrawal.processedBy = auth.userId as any;

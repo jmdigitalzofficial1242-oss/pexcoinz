@@ -1,7 +1,9 @@
 import { Router } from "express";
 import crypto from "crypto";
+import { Decimal } from "decimal.js";
 import Deposit from "../models/Deposit";
 import PaymentMethod from "../models/PaymentMethod";
+import User from "../models/User";
 import AdminLog from "../models/AdminLog";
 import { executeLedgerTransaction } from "../lib/walletService";
 import { getAuthUser } from "./auth";
@@ -128,28 +130,31 @@ router.post("/admin/deposits/:id/approve", async (req, res): Promise<void> => {
     }
 
     try {
-      // 1. Give Net Amount to User
-      await executeLedgerTransaction({
-        userId: deposit.userId.toString(),
-        type: "deposit",
-        amount: deposit.netAmount.toString(),
-        currency: deposit.currency,
-        referenceId: deposit.referenceId, // Will prevent double processing naturally if already exists in ledger
-        metadata: { adminId: auth.userId, depositId: deposit._id.toString(), methodId: deposit.methodId.toString(), type: 'net_deposit' }
-      });
-
-      // 2. Give Fee to Super Admin
       const superAdmin = await User.findOne({ email: process.env.SUPER_ADMIN_EMAIL || "bilalarch1242@gmail.com" });
-      if (superAdmin && parseFloat(deposit.feeAmount.toString()) > 0) {
-        await executeLedgerTransaction({
+      
+      const ledgerRequests: any[] = [
+        {
+          userId: deposit.userId.toString(),
+          type: "deposit",
+          amount: deposit.netAmount.toString(),
+          currency: deposit.currency,
+          referenceId: deposit.referenceId,
+          metadata: { adminId: auth.userId, depositId: deposit._id.toString(), methodId: deposit.methodId.toString(), type: 'net_deposit' }
+        }
+      ];
+
+      if (superAdmin && new Decimal(deposit.feeAmount.toString()).greaterThan(0)) {
+        ledgerRequests.push({
           userId: superAdmin._id.toString(),
-          type: "referral_bonus", // Admin collection alias
+          type: "referral_bonus",
           amount: deposit.feeAmount.toString(),
           currency: deposit.currency,
           referenceId: `${deposit.referenceId}-COLLECT`,
           metadata: { sourceUserId: deposit.userId.toString(), depositId: deposit._id.toString(), type: 'deposit_fee_collection' }
         });
       }
+
+      await executeLedgerTransaction(ledgerRequests);
 
       deposit.status = "approved";
       deposit.verifiedBy = auth.userId as any;

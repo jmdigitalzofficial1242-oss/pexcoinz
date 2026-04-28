@@ -33,10 +33,6 @@ app.use(express.urlencoded({ extended: true }));
 // API Routes
 app.use("/api", router);
 
-// Serve frontend static files in production
-const clientDist = path.resolve(__dirname, "../../client/dist");
-app.use(express.static(clientDist));
-
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(`[Error] ${req.method} ${req.url}:`, err.stack);
@@ -47,14 +43,20 @@ app.use((err: any, req: any, res: any, next: any) => {
   });
 });
 
-// SPA fallback - serve index.html for all non-API routes
-app.get("*", (req, res) => {
-  if (req.path.startsWith("/api")) {
-    res.status(404).json({ error: "API endpoint not found" });
-    return;
-  }
-  res.sendFile(path.join(clientDist, "index.html"));
-});
+// Serve frontend static files in production (Only if not on Vercel, which handles this natively)
+if (!process.env.VERCEL) {
+  const clientDist = path.resolve(__dirname, "../../client/dist");
+  app.use(express.static(clientDist));
+
+  // SPA fallback - serve index.html for all non-API routes
+  app.get("*", (req, res) => {
+    if (req.path.startsWith("/api")) {
+      res.status(404).json({ error: "API endpoint not found" });
+      return;
+    }
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+}
 
 
 export default app;

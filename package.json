@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd client && pnpm install && pnpm build && cd ../server && pnpm install && pnpm build",
-    "postinstall": "cd client && pnpm install && cd ../server && pnpm install",
+    "build": "pnpm build:client && pnpm build:server",
+    "build:client": "cd client && pnpm build",
+    "build:server": "cd server && pnpm build",
+    "postinstall": "pnpm install --recursive",
     "start": "cd server && pnpm start"
   },
   "dependencies": {
+    "decimal.js": "^10.5.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
