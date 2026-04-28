@@ -330,6 +330,7 @@ export async function customFetch<T = unknown>(
   const { responseType = "auto", headers: headersInit, ...init } = options;
 
   const method = resolveMethod(input, init.method);
+  const url = resolveUrl(input);
 
   if (init.body != null && (method === "GET" || method === "HEAD")) {
     throw new TypeError(`customFetch: ${method} requests cannot have a body.`);
@@ -358,14 +359,22 @@ export async function customFetch<T = unknown>(
     }
   }
 
-  const requestInfo = { method, url: resolveUrl(input) };
+  const requestInfo = { method, url };
 
-  const response = await fetch(input, { ...init, method, headers });
+  try {
+    console.log(`[API Request] ${method} ${url}`);
+    const response = await fetch(input, { ...init, method, headers });
 
-  if (!response.ok) {
-    const errorData = await parseErrorBody(response, method);
-    throw new ApiError(response, errorData, requestInfo);
+    if (!response.ok) {
+      const errorData = await parseErrorBody(response, method);
+      console.error(`[API Error Response] ${response.status} ${url}`, errorData);
+      throw new ApiError(response, errorData, requestInfo);
+    }
+
+    const data = await parseSuccessBody(response, responseType, requestInfo);
+    return data as T;
+  } catch (err: any) {
+    console.error(`[API Network/Fetch Error] ${url}:`, err);
+    throw err;
   }
-
-  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
 }
