@@ -2,6 +2,7 @@
   "name": "pexcoin-deployment",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm build:client && pnpm build:server",
     "build:client": "cd client && pnpm build",
