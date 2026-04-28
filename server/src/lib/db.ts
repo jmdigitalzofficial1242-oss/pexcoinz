@@ -2,7 +2,13 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 dotenv.config();
 
+let isConnected = false;
+
 export const connectDB = async () => {
+  if (isConnected) {
+    return;
+  }
+
   try {
     const uri = process.env.MONGODB_URI;
     
@@ -11,9 +17,11 @@ export const connectDB = async () => {
     }
     
     const conn = await mongoose.connect(uri);
+    isConnected = !!conn.connections[0].readyState;
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
-    process.exit(1);
+    // In serverless, we throw the error so the function fails correctly
+    throw error;
   }
 };
