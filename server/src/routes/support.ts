@@ -4,7 +4,7 @@ import SupportTicket from "../models/SupportTicket";
 import SupportMessage from "../models/SupportMessage";
 import User from "../models/User";
 
-const router: Router = Router();
+const router: any = Router();
 
 function requireAuth(req: any, res: any): any | null {
   const user = getAuthUser(req);

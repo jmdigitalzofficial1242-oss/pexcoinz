@@ -4,7 +4,7 @@ import Conversation from "../models/Conversation";
 import Message from "../models/Message";
 import { SendOpenaiMessageBody, CreateOpenaiConversationBody } from "../lib/schemas";
 
-const router: Router = Router();
+const router: any = Router();
 
 const TRADING_SYSTEM_PROMPT = `You are PexCoin AI, an expert crypto trading assistant for the PexCoin trading platform.
 

@@ -6,7 +6,7 @@ import Deposit from "../models/Deposit";
 import Withdrawal from "../models/Withdrawal";
 import mongoose from "mongoose";
 
-const router: Router = Router();
+const router: any = Router();
 
 // Get user's transaction history (combines deposits, withdrawals, and ledger)
 router.get("/transactions", async (req, res): Promise<void> => {

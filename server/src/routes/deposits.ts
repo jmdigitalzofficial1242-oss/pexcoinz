@@ -8,7 +8,7 @@ import AdminLog from "../models/AdminLog";
 import { executeLedgerTransaction } from "../lib/walletService";
 import { getAuthUser } from "./auth";
 
-const router: Router = Router();
+const router: any = Router();
 
 // User: Get Deposit History
 router.get("/deposits", async (req, res): Promise<void> => {

@@ -5,7 +5,7 @@ import {
   GetCoinChartResponse,
 } from "../lib/schemas";
 
-const router: Router = Router();
+const router: any = Router();
 
 // --- CoinGecko ID mapping ---
 const SYMBOL_TO_COINGECKO_ID: Record<string, string> = {

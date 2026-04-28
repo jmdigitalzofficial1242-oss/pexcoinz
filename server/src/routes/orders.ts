@@ -7,7 +7,7 @@ import Order from "../models/Order";
 import Wallet from "../models/Wallet";
 import { executeLedgerTransaction } from "../lib/walletService";
 
-const router: Router = Router();
+const router: any = Router();
 
 router.post("/orders", async (req, res): Promise<void> => {
   const auth = getAuthUser(req);

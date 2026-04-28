@@ -3,7 +3,7 @@ import { getAuthUser } from "./auth";
 import User from "../models/User";
 import crypto from "crypto";
 
-const router: Router = Router();
+const router: any = Router();
 
 function hashPaymentPassword(password: string): string {
   const salt = process.env.PASSWORD_SALT ?? "pexcoin_salt";
