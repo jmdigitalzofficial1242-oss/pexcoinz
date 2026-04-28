@@ -6,7 +6,7 @@ import AdminLog from "../models/AdminLog";
 import { executeLedgerTransaction, checkAvailableBalance, lockBalance, unlockBalance, checkAndLockBalance, completeWithdrawalBatch } from "../lib/walletService";
 import { getAuthUser } from "./auth";
 
-const router = Router();
+const router: Router = Router();
 
 // User: Get Withdrawal History
 router.get("/withdrawals", async (req, res): Promise<void> => {

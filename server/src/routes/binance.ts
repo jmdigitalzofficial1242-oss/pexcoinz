@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { getAuthUser } from "./auth";
 
 const TESTNET_BASE = "https://testnet.binance.vision/api/v3";
-const router = Router();
+const router: Router = Router();
 
 function getBinanceKeys() {
   const apiKey = process.env.BINANCE_TESTNET_API_KEY;

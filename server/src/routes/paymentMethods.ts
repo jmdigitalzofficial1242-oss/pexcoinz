@@ -2,7 +2,7 @@ import { Router } from "express";
 import PaymentMethod from "../models/PaymentMethod";
 import { getAuthUser } from "./auth";
 
-const router = Router();
+const router: Router = Router();
 
 // User: Get all active payment methods
 router.get("/payment-methods", async (req, res): Promise<void> => {

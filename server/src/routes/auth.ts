@@ -5,7 +5,7 @@ import User from "../models/User";
 import Wallet from "../models/Wallet";
 import { RegisterBody, LoginBody, LoginResponse, GetMeResponse } from "../lib/schemas";
 
-const router = Router();
+const router: Router = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("JWT_SECRET missing!") })() : "local_dev_only_secret");
 

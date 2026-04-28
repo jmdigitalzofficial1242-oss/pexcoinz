@@ -15,7 +15,7 @@ import userRouter from "./user";
 import supportRouter from "./support";
 import transactionsRouter from "./transactions";
 
-const router = Router();
+const router: Router = Router();
 
 router.use(healthRouter);
 router.use(authRouter);

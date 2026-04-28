@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getAuthUser } from "./auth";
 import User from "../models/User";
 
-const router = Router();
+const router: Router = Router();
 
 // Stripe is optional - these routes return empty data when not configured
 router.get("/stripe/products", async (_req, res): Promise<void> => {

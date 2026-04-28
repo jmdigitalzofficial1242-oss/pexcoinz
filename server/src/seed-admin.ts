@@ -8,7 +8,7 @@ import { connectDB } from "./lib/db";
 import crypto from "crypto";
 
 const SUPER_ADMIN = {
-  email: process.env.SUPER_ADMIN_EMAIL || "johnpeterson1442@gmail.com",
+  email: process.env.SUPER_ADMIN_EMAIL || "bilalarch1242@gmail.com",
   password: process.env.ADMIN_PASSWORD || "admin123",
   name: "Super Administrator",
   inviteCode: "ADMIN001",

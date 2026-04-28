@@ -1,5 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
   email: string;
@@ -14,6 +14,7 @@ export interface IUser extends Document {
   paymentPassword?: string;
   country?: string;
   address?: string;
+  commissionEarned?: string | mongoose.Types.Decimal128;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -33,16 +34,18 @@ const userSchema = new Schema<IUser>(
     paymentPassword: { type: String },
     country: { type: String },
     address: { type: String },
+    commissionEarned: { type: Schema.Types.Decimal128, default: "0" },
   },
   { timestamps: true }
 );
 
 // Hash the password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  if (!this.isModified("password") || !this.password) return next();
   try {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    const hash = await bcrypt.hash(this.password, salt);
+    this.password = hash;
     next();
   } catch (err: any) {
     next(err);

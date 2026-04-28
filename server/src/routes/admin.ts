@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Router } from "express";
 import {
   AdminLoginBody,
@@ -21,7 +22,7 @@ import { executeLedgerTransaction, unlockBalance } from "../lib/walletService";
 import WalletLedger from "../models/WalletLedger";
 import AdminLog from "../models/AdminLog";
 
-const router = Router();
+const router: Router = Router();
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH ?? "";
@@ -200,9 +201,9 @@ router.patch("/admin/users/:id", async (req, res): Promise<void> => {
   let wallet = await Wallet.findOne({ userId: user._id });
   if (!wallet) wallet = await Wallet.create({ userId: user._id, balances: {} });
 
-  if (body.usdtBalance != null) wallet.balances.set("USDT", body.usdtBalance.toString());
-  if (body.btcBalance != null) wallet.balances.set("BTC", body.btcBalance.toString());
-  if (body.ethBalance != null) wallet.balances.set("ETH", body.ethBalance.toString());
+  if (body.usdtBalance != null) wallet.balances.set("USDT", mongoose.Types.Decimal128.fromString(body.usdtBalance.toString()));
+  if (body.btcBalance != null) wallet.balances.set("BTC", mongoose.Types.Decimal128.fromString(body.btcBalance.toString()));
+  if (body.ethBalance != null) wallet.balances.set("ETH", mongoose.Types.Decimal128.fromString(body.ethBalance.toString()));
   await wallet.save();
 
   // Optionally log admin adjustment to ledger
@@ -243,7 +244,7 @@ router.get("/admin/transactions", async (req, res): Promise<void> => {
 
   const { status, type } = req.query as { status?: string; type?: string };
 
-  const finalTransactions = [];
+  const finalTransactions: any[] = [];
 
   const statusQuery = status ? { status } : {};
 

@@ -15,12 +15,12 @@ const walletSchema = new Schema<IWallet>(
     balances: {
       type: Map,
       of: Schema.Types.Decimal128,
-      default: { USDT: "0", BTC: "0", ETH: "0" },
+      default: () => new Map(),
     },
     lockedBalances: {
       type: Map,
       of: Schema.Types.Decimal128,
-      default: { USDT: "0", BTC: "0", ETH: "0" }, // specific for pending withdrawals
+      default: () => new Map(),
     },
     status: { type: String, required: true, default: "active" },
   },

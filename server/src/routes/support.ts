@@ -4,11 +4,16 @@ import SupportTicket from "../models/SupportTicket";
 import SupportMessage from "../models/SupportMessage";
 import User from "../models/User";
 
-const router = Router();
+const router: Router = Router();
 
 function requireAuth(req: any, res: any): any | null {
   const user = getAuthUser(req);
-  if (!user) { res.status(401).json({ error: "Unauthorized" }); return null; }
+  if (!user) { 
+    if (!res.headersSent) {
+      res.status(401).json({ error: "Unauthorized" }); 
+    }
+    return null; 
+  }
   return user;
 }
 
@@ -99,8 +104,9 @@ router.get("/support/unread", async (req: any, res: any) => {
 
 // ─── ADMIN: Get all support tickets ──────────────────────────────────────────
 router.get("/admin/support/tickets", async (req: any, res: any) => {
-  const authUser = requireAuth(req, res);
-  if (!authUser || !isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
+  const authUser = getAuthUser(req);
+  if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
 
   const tickets = await SupportTicket.find().sort({ lastMessageAt: -1 });
 
@@ -124,8 +130,9 @@ router.get("/admin/support/tickets", async (req: any, res: any) => {
 
 // ─── ADMIN: Get messages for a ticket ────────────────────────────────────────
 router.get("/admin/support/tickets/:ticketId", async (req: any, res: any) => {
-  const authUser = requireAuth(req, res);
-  if (!authUser || !isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
+  const authUser = getAuthUser(req);
+  if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
 
   const ticket = await SupportTicket.findById(req.params.ticketId);
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -156,8 +163,9 @@ router.get("/admin/support/tickets/:ticketId", async (req: any, res: any) => {
 
 // ─── ADMIN: Reply to a ticket ─────────────────────────────────────────────────
 router.post("/admin/support/tickets/:ticketId/messages", async (req: any, res: any) => {
-  const authUser = requireAuth(req, res);
-  if (!authUser || !isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
+  const authUser = getAuthUser(req);
+  if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
 
   const { content } = req.body;
   if (!content?.trim()) return res.status(400).json({ error: "Content required" });
@@ -180,8 +188,9 @@ router.post("/admin/support/tickets/:ticketId/messages", async (req: any, res: a
 
 // ─── ADMIN: Update ticket status ──────────────────────────────────────────────
 router.patch("/admin/support/tickets/:ticketId", async (req: any, res: any) => {
-  const authUser = requireAuth(req, res);
-  if (!authUser || !isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
+  const authUser = getAuthUser(req);
+  if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
 
   const { status } = req.body;
   await SupportTicket.findByIdAndUpdate(req.params.ticketId, { status });
@@ -190,8 +199,9 @@ router.patch("/admin/support/tickets/:ticketId", async (req: any, res: any) => {
 
 // ─── ADMIN: Unread count from users ──────────────────────────────────────────
 router.get("/admin/support/unread", async (req: any, res: any) => {
-  const authUser = requireAuth(req, res);
-  if (!authUser || !isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
+  const authUser = getAuthUser(req);
+  if (!authUser) return res.status(401).json({ error: "Unauthorized" });
+  if (!isAdminUser(authUser)) return res.status(403).json({ error: "Forbidden" });
 
   const count = await SupportMessage.countDocuments({
     senderRole: "user",
