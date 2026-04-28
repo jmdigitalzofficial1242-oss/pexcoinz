@@ -7,8 +7,7 @@
     "build": "pnpm build:client && pnpm build:server",
     "build:client": "cd client && pnpm build",
     "build:server": "cd server && pnpm build",
-    "vercel-build": "pnpm install --recursive && pnpm build:client && pnpm build:server",
-    "postinstall": "pnpm install --recursive",
+    "vercel-build": "pnpm build:client && pnpm build:server",
     "start": "cd server && pnpm start"
   },
   "dependencies": {
