@@ -52,7 +52,7 @@ export async function executeLedgerTransaction(request: LedgerRequest | LedgerRe
       const newBalanceStr = newBalance.toString();
 
       // 2. Update wallet securely
-      wallet.balances.set(currency, mongoose.Types.Decimal128.fromString(newBalanceStr));
+      wallet.balances.set(currency, new mongoose.Types.Decimal128(newBalanceStr));
       await wallet.save({ session });
       
       newBalances[currency] = newBalanceStr;
@@ -65,9 +65,9 @@ export async function executeLedgerTransaction(request: LedgerRequest | LedgerRe
             userId,
             type,
             currency,
-            amount: mongoose.Types.Decimal128.fromString(decimalAmount.toString()),
-            beforeBalance: mongoose.Types.Decimal128.fromString(currentBalanceDecimal.toString()),
-            afterBalance: mongoose.Types.Decimal128.fromString(newBalanceStr),
+            amount: new mongoose.Types.Decimal128(decimalAmount.toString()),
+            beforeBalance: new mongoose.Types.Decimal128(currentBalanceDecimal.toString()),
+            afterBalance: new mongoose.Types.Decimal128(newBalanceStr),
             referenceId,
             metadata,
           },
@@ -122,7 +122,7 @@ export async function checkAndLockBalance(userId: string, currency: string, amou
     }
 
     const newLocked = currentLocked.plus(amount);
-    wallet.lockedBalances.set(currency, mongoose.Types.Decimal128.fromString(newLocked.toString()));
+    wallet.lockedBalances.set(currency, new mongoose.Types.Decimal128(newLocked.toString()));
     await wallet.save({ session });
 
     await session.commitTransaction();
@@ -151,7 +151,7 @@ export async function lockBalance(userId: string, currency: string, amountToLock
     const currentLocked = new Decimal(wallet.lockedBalances.get(currency)?.toString() || "0");
     const newLocked = currentLocked.plus(lockVal);
 
-    wallet.lockedBalances.set(currency, mongoose.Types.Decimal128.fromString(newLocked.toString()));
+    wallet.lockedBalances.set(currency, new mongoose.Types.Decimal128(newLocked.toString()));
     await wallet.save({ session });
 
     await session.commitTransaction();
@@ -197,14 +197,14 @@ export async function completeWithdrawalBatch(params: {
     const newLocked = currentLocked.minus(new Decimal(totalAmount));
     if (newLocked.isNegative()) throw new Error("Insufficient locked balance to unlock.");
     
-    wallet.lockedBalances.set(currency, mongoose.Types.Decimal128.fromString(newLocked.toString()));
+    wallet.lockedBalances.set(currency, new mongoose.Types.Decimal128(newLocked.toString()));
 
     // 3. Deduct total amount from balance (Net + Fee)
     const currentBalance = new Decimal(wallet.balances.get(currency)?.toString() || "0");
     const newBalance = currentBalance.minus(new Decimal(totalAmount));
     if (newBalance.isNegative()) throw new Error("Insufficient balance.");
 
-    wallet.balances.set(currency, mongoose.Types.Decimal128.fromString(newBalance.toString()));
+    wallet.balances.set(currency, new mongoose.Types.Decimal128(newBalance.toString()));
     await wallet.save({ session });
 
     // 4. Create Ledger Entries
@@ -214,9 +214,9 @@ export async function completeWithdrawalBatch(params: {
       userId,
       type: "withdraw",
       currency,
-      amount: mongoose.Types.Decimal128.fromString(`-${netAmount}`),
-      beforeBalance: mongoose.Types.Decimal128.fromString(currentBalance.toString()),
-      afterBalance: mongoose.Types.Decimal128.fromString(currentBalance.minus(new Decimal(netAmount)).toString()),
+      amount: new mongoose.Types.Decimal128(`-${netAmount}`),
+      beforeBalance: new mongoose.Types.Decimal128(currentBalance.toString()),
+      afterBalance: new mongoose.Types.Decimal128(currentBalance.minus(new Decimal(netAmount)).toString()),
       referenceId: `${referenceId}-NET`,
       metadata: { withdrawalId, type: 'net_withdraw' }
     }], { session });
@@ -227,9 +227,9 @@ export async function completeWithdrawalBatch(params: {
       userId,
       type: "fee",
       currency,
-      amount: mongoose.Types.Decimal128.fromString(`-${feeAmount}`),
-      beforeBalance: mongoose.Types.Decimal128.fromString(currentBalance.minus(new Decimal(netAmount)).toString()),
-      afterBalance: mongoose.Types.Decimal128.fromString(newBalance.toString()),
+      amount: new mongoose.Types.Decimal128(`-${feeAmount}`),
+      beforeBalance: new mongoose.Types.Decimal128(currentBalance.minus(new Decimal(netAmount)).toString()),
+      afterBalance: new mongoose.Types.Decimal128(newBalance.toString()),
       referenceId: `${referenceId}-FEE`,
       metadata: { withdrawalId, type: 'withdraw_fee' }
     }], { session });
@@ -241,7 +241,7 @@ export async function completeWithdrawalBatch(params: {
         const adminBefore = new Decimal(adminWallet.balances.get(currency)?.toString() || "0");
         const adminAfter = adminBefore.plus(new Decimal(feeAmount));
         
-        adminWallet.balances.set(currency, mongoose.Types.Decimal128.fromString(adminAfter.toString()));
+        adminWallet.balances.set(currency, new mongoose.Types.Decimal128(adminAfter.toString()));
         await adminWallet.save({ session });
 
         await WalletLedger.create([{
@@ -249,9 +249,9 @@ export async function completeWithdrawalBatch(params: {
           userId: superAdminId,
           type: "referral_bonus",
           currency,
-          amount: mongoose.Types.Decimal128.fromString(feeAmount),
-          beforeBalance: mongoose.Types.Decimal128.fromString(adminBefore.toString()),
-          afterBalance: mongoose.Types.Decimal128.fromString(adminAfter.toString()),
+          amount: new mongoose.Types.Decimal128(feeAmount),
+          beforeBalance: new mongoose.Types.Decimal128(adminBefore.toString()),
+          afterBalance: new mongoose.Types.Decimal128(adminAfter.toString()),
           referenceId: `${referenceId}-COLLECT`,
           metadata: { sourceUserId: userId, type: 'fee_collection' }
         }], { session });

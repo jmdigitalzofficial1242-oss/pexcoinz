@@ -45,9 +45,9 @@ async function upsertUser(
 
     const wallet = await Wallet.findOne({ userId: existing._id });
     if (wallet) {
-      wallet.balances.set("USDT", mongoose.Types.Decimal128.fromString(userData.usdtBalance));
-      wallet.balances.set("BTC", mongoose.Types.Decimal128.fromString(userData.btcBalance));
-      wallet.balances.set("ETH", mongoose.Types.Decimal128.fromString(userData.ethBalance));
+      wallet.balances.set("USDT", new mongoose.Types.Decimal128(userData.usdtBalance));
+      wallet.balances.set("BTC", new mongoose.Types.Decimal128(userData.btcBalance));
+      wallet.balances.set("ETH", new mongoose.Types.Decimal128(userData.ethBalance));
       await wallet.save();
     }
     
@@ -75,9 +75,9 @@ async function upsertUser(
   await Wallet.create({
     userId: created._id,
     balances: {
-      USDT: mongoose.Types.Decimal128.fromString(userData.usdtBalance),
-      BTC: mongoose.Types.Decimal128.fromString(userData.btcBalance),
-      ETH: mongoose.Types.Decimal128.fromString(userData.ethBalance)
+      USDT: new mongoose.Types.Decimal128(userData.usdtBalance),
+      BTC: new mongoose.Types.Decimal128(userData.btcBalance),
+      ETH: new mongoose.Types.Decimal128(userData.ethBalance)
     },
     lockedBalances: { USDT: "0", BTC: "0", ETH: "0" },
     status: "active"
