@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "pnpm build:client && pnpm build:server",
-    "build:client": "cd client && pnpm build",
-    "build:server": "cd server && pnpm build",
+    "build:client": "cd client && npx vite build",
+    "build:server": "cd server && npx tsc && npx tsc-alias",
     "vercel-build": "pnpm build:client && pnpm build:server",
     "start": "cd server && pnpm start"
   },
