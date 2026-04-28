@@ -22,7 +22,7 @@ import { executeLedgerTransaction, unlockBalance } from "../lib/walletService";
 import WalletLedger from "../models/WalletLedger";
 import AdminLog from "../models/AdminLog";
 
-const router: Router = Router();
+const router: any = Router();
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? "admin";
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH ?? "";

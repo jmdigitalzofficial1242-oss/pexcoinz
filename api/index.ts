@@ -3,23 +3,20 @@ import { connectDB } from "../server/src/lib/db";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async (req: VercelRequest, res: VercelResponse) => {
-  console.log(`[Vercel API] Request: ${req.method} ${req.url}`);
-  
   try {
-    // Ensure DB is connected
-    console.log("[Vercel API] Connecting to Database...");
+    // 1. Connect to DB
     await connectDB();
-    console.log("[Vercel API] DB Connected.");
 
-    // Hand off to Express app
+    // 2. Run the Express App
     return app(req, res);
   } catch (error: any) {
-    console.error("[Vercel API Error]:", error);
+    console.error("CRITICAL SERVER ERROR:", error);
     
-    // Detailed error message in logs, but generic for user
+    // Return the actual error message so we can fix it!
     res.status(500).json({ 
-      error: "Internal Server Error",
-      message: process.env.NODE_ENV === "development" ? error.message : "Server side crash"
+      error: "Server Crash Details",
+      details: error.message,
+      stack: error.stack?.split("\n")[0] // Just the first line of stack
     });
   }
 };
