@@ -31,7 +31,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
+// We mount at both /api and root to handle different Vercel routing behaviors
 app.use("/api", router);
+app.use("/", router);
+
+
 
 // Error handling middleware
 app.use((err: any, req: any, res: any, next: any) => {
