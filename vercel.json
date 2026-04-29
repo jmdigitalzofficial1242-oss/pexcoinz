@@ -15,14 +15,15 @@
   ],
   "rewrites": [
     {
-      "src": "/api/:path*",
-      "dest": "/api/index.ts"
+      "source": "/api/:path*",
+      "destination": "/api/index.ts"
     },
     {
-      "src": "/((?!api|assets|static|.*\\..*$).*)",
-      "dest": "/index.html"
+      "source": "/((?!api|assets|static|.*\\..*$).*)",
+      "destination": "/index.html"
     }
   ],
+
   "cleanUrls": true,
   "trailingSlash": false
 }
