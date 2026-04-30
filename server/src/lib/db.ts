@@ -24,7 +24,8 @@ export const connectDB = async () => {
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      // Allow mongoose to buffer commands while connecting
+      bufferCommands: true,
     };
 
     cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
